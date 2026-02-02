@@ -288,7 +288,7 @@ What would you like to know about me?</div>
         };
 
         responses.influence = {
-            kw: ['influence', 'no authority', 'buy-in', 'persuade', 'stakeholder', 'influencing without authority', 'without authority'],
+            kw: ['influence', 'no authority', 'buy-in', 'persuade', 'influencing without authority', 'without authority'],
             r: "At Twilio, I redesigned our job description template to be more inclusive, but had zero authority over hiring managers who write descriptions exactly as they want.\n\nIn collaboration with legal, I held a virtual roadshow showcasing the \"before\" and \"after\" of the new template. I illustrated how it reduced compliance risks (legal spoke to this) and showed hiring managers how better templates would reduce back-and-forth with recruiters and prevent candidates from self-selecting out of key roles.\n\nBreaking down ownership, highlighting benefits, and leveraging legal as an advocate gave hiring managers a stronger sense of responsibility by speaking in a language they understood, driving successful adoption."
         };
 
@@ -314,7 +314,7 @@ What would you like to know about me?</div>
 
         responses.communication = {
             kw: ['stakeholder', 'communication', 'how do you communicate', 'keeping people informed', 'updates', 'communication style'],
-            r: "I value over-communication in different mediums to catch people where they are. In hybrid environments, this is a must.\n\nFor Stanford's business transformation project:\n\n**Before:**\n• Stakeholder mapping: Who needs to know what, to what extent\n• Mode: Meeting recaps emailed, Slack confirmations, Looms for TLDRs\n\n**During:**\n• Meeting agendas: Overview of what's expected, roles, prework\n• Status updates: Consistent format (progress, next steps, pivots)\n• Transparency on risks: Flag problems early\n• Visibility tools: Dashboards in Airtable/Asana/Google Docs\n\n**Showcasing org-wide:**\n• Explaining logic: Assumptions, approach, findings, recommendations\n\n**After:**\n• Periodic updates on builds in production\n\nCheck out \"Leading Stanford Online's Business Transformation Strategy\" project for more details."
+            r: "I always value over-communication in different mediums to catch people where they are. And with most places in a hybrid work environment, communication across different mediums is a must.\n\nFor the business transformation project I led for Stanford, I leveraged this framework:\n\nBefore the project:\n• Stakeholder mapping: Who needs to know the what, where, and why, and to what extent (for my sponsor, executive, leader, and project team)\n• Mode of communication: Ensuring meeting recaps are emailed, confirmations in Slack saying to check email, and using Looms in place of a meeting or embedded in emails for a TLDR\n\nDuring the project:\n• Meeting agendas: Providing a brief overview of what's expected (working session, brainstorm), attendee roles, and if any prework is involved\n• Status updates: Using a consistent format in my messaging (progress, visibility only, next steps, pivots) so people can scan quickly\n• Transparency on risks: I flag potential problems early\n• Visibility tools: Dashboards in Airtable, Asana, or Google Docs so stakeholders can self-serve\n\nShowcasing the project org-wide:\n• Explaining the logic: Broke down our assumptions, approach, findings, and recommendations (both free and paid, short-term versus long-term wins)\n\nAfter the project:\n• Providing periodic updates on the status of each build that went into production to keep the org abreast of the actual progress being made\n\nCheck out the \"Leading Stanford Online's Business Transformation Strategy\" project in my portfolio for more details."
         };
 
         function addMessage(content, isBot = false) {
@@ -366,6 +366,14 @@ What would you like to know about me?</div>
                 return responses.leaving.r;
             }
             
+            // Check communication style specifically
+            if (lowerMessage.includes('communication style') || 
+                lowerMessage.includes('stakeholder communication') ||
+                lowerMessage.includes('process for stakeholder') ||
+                lowerMessage.includes('explain your process')) {
+                return responses.communication.r;
+            }
+            
             // Check workflow/automation context
             const hasWorkflowContext = lowerMessage.includes('workflow') || 
                                       lowerMessage.includes('automation') || 
@@ -385,7 +393,7 @@ What would you like to know about me?</div>
             
             // Check other responses
             for (const key in responses) {
-                if (key === 'failure' || key === 'leaving' || key === 'workflow') {
+                if (key === 'failure' || key === 'leaving' || key === 'workflow' || key === 'communication') {
                     continue;
                 }
                 const data = responses[key];
