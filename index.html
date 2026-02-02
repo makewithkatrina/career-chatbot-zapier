@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Katrina</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 650px;
+            height: 700px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        .chat-header h1 { font-size: 24px; margin-bottom: 5px; }
+        .chat-header p { font-size: 14px; opacity: 0.9; }
+        .resume-download { margin-top: 10px; }
+        .resume-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-block;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .resume-btn:hover { background: rgba(255, 255, 255, 0.3); }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message.bot { justify-content: flex-start; }
+        .message.user { justify-content: flex-end; }
+        .message-content {
+            max-width: 80%;
+            padding: 14px 18px;
+            border-radius: 18px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            padding-left: 50px;
+        }
+        .bot-avatar {
+            position: absolute;
+            left: -15px;
+            bottom: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            object-fit: cover;
+        }
+        .message.user .message-content {
+            background: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .quick-replies {
+            padding: 10px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        .quick-replies-header {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        .quick-replies-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 110px;
+            overflow-y: auto;
+        }
+        .quick-reply-btn {
+            background: #f0f0f0;
+            border: 1px solid #d0d0d0;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .quick-reply-btn:hover {
+            background: #059669;
+            color: white;
+            border-color: #059669;
+        }
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid #d0d0d0;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+        }
+        .chat-input input:focus { border-color: #059669; }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .chat-input button:hover { transform: scale(1.05); }
+        .typing-indicator { display: flex; gap: 4px; padding: 12px 18px; }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>👋🏾 Chat with Kat</h1>
+            <p>Ask me about my experience, projects, or what I do for fun!</p>
+            <div class="resume-download">
+                <a href="https://drive.google.com/file/d/1JGmj7lk8DNxcVkGraRFSJhL7cDDhqy87/view?usp=drive_link" target="_blank" class="resume-btn">📄 Download Resume</a>
+                <a href="https://meet-katrina-h-qmrcr9t.gamma.site/" target="_blank" class="resume-btn">🎨 View Portfolio</a>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-content">
+                    <img src="https://dn721802.ca.archive.org/0/items/headshot-kh/Headshot_KH.JPG" alt="Katrina" class="bot-avatar">
+Hey there! I'm Katrina. 👋🏾
+
+I'm a strategic systems thinker with 12 years of experience translating executive priorities into organizational transformation and scalable systems that drive growth and operational excellence across tech, education, and SaaS sectors. I bring play to just enough process and thrive at the intersection of operations, creativity, and enablement.
+
+What would you like to know about me?</div>
+            </div>
+        </div>
+
+        <div class="quick-replies" id="quickReplies">
+            <div class="quick-replies-header">Not sure what to ask? Click on one of the prompts below!</div>
+            <div class="quick-replies-buttons">
+            <button class="quick-reply-btn" onclick="sendQuickReply('Why are you interested in the AI Transformation Partner role?')">AI Transformation Partner</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Why Zapier?')">Why Zapier?</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Tell me about a transformation you led')">Leading business transformation</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Describe a time when you had to learn something completely new quickly.')">Drinking from the firehouse</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('How do you handle ambiguity?')">Handling ambiguity</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Tell me about a time you failed?')">Navigating failure</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Walk me through a Zapier workflow')">Building automations</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('How do you influence without authority?')">Influencing without authority</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Describe how you have managed competing priorities')">Analysis paralysis</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('How do you approach designing a knowledge management system?')">Knowledge management</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('Explain your process for stakeholder communication.')">Communication style</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('What do you do for fun?')">Funsies</button>
+            <button class="quick-reply-btn" onclick="sendQuickReply('What are you most proud of?')">Proudest work</button>
+            </div>
+        </div>
+
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Type your question..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="responses.js"></script>
+    <script>
+        const fallbackResponses = [
+            "That's a great question! I don't have a pre-written answer for that specific topic, but I'd love to discuss it further. Feel free to email me at makewithkatrina@gmail.com or connect on LinkedIn, and I'm happy to dive deeper!",
+            "Hmm, I don't have that exact info programmed in, but that's exactly the kind of question I'd love to explore in a real conversation! Try asking about my work at Stanford, Twilio, my Zapier automation experience, or what drives me as a 'figure it out' person.",
+            "Great question! While I might not have that specific response ready, you can reach me at makewithkatrina@gmail.com or connect on LinkedIn (linkedin.com/in/katrinahoner). In the meantime, ask me about my transformation projects, automation skills, or why I'm excited about Zapier!"
+        ];
+
+        // Load responses from external file or use inline version
+        let responses = {};
+        
+        // Inline responses (condensed for size)
+        responses.zapier = {
+            kw: ['ai transformation', 'my interest', 'transformation partner', 'interested in the ai'],
+            r: "I've honestly been eyeing Zapier for a while, but Philip Lakin's call for an AI Transformation Partner was my sign to express my interest in crushing this role. When I first came across Emily Mabie on LinkedIn and her role as \"Senior AI Automation Engineer for HR,\" I thought, that's exactly the kind of work I already do and would love continuing. That could be me either as an AI Transformation Partner or, if I had to give myself a title, as a \"Senior AI Program Manager\" or \"Senior AI Business Strategist.\"\n\nBeyond my love for bringing play to just enough process and passion for \"figuring things out\", I am committed to understanding what's not working so I can tinker, build, deploy joyful solutions that work and teach others how they can do the same. I thrive at the intersection of operations, creativity, and enablement."
+        };
+        
+        responses.transformation = {
+            kw: ['transformation', 'change initiative', 'stanford project', 'stalled', '2 years', 'executive'],
+            r: "In my current role at Stanford, I was asked to lead a project team focused on accelerating a business transformation initiative that had been stalled for over 2 years.\n\nAfter asking myself and, admittedly, my manager, \"Why the hell are we stuck?,\" I took that same question directly to the team. I held two separate hour-and-a-half working sessions with one member from each cross-functional team, where I ran a \"5 Whys\" session. I challenged all of us to examine our biases and focus on the true root causes.\n\nUsing the MoSCoW model, I created a priority roadmap that got 100% executive approval because everyone could finally see how their piece fit into the bigger picture.\n\nWe accelerated that 2+ year project to completion in 3 months. All critical initiatives moved to production as of December 2025. Similar to what Wade mentioned during ZapConnect 2025 with a \"This sucks and...\" discussion, I used this project to illustrate what sucked and how exactly we could tackle the issues."
+        };
+        
+        responses.ambiguity = {
+            kw: ['ambiguity', 'limited information', 'unclear', 'vague', 'uncertainty'],
+            r: "I often offset ambiguity by leaning into my creativity, ensuring I present my point of view and logic for my approach based on business priorities, my manager's expectations, and time constraints.\n\nDuring my time at Twilio, my manager tasked me with leading an employee shoot to refresh our careers site for a remote-first culture. That was all the information I was provided.\n\nThe photographer needed a shot list 2 weeks in advance and spent 30 minutes per concept. With 8 hours on-site, I needed to account for how many themed shots we could realistically take.\n\nAfter collaborating with our Recruitment Marketing lead, I presented six core shot concepts with my reasoning and pros/cons. I provided my manager with a clear sequence of actions: review the shot list by a specific deadline. If no feedback, we'd prioritize what I outlined but buffer 10 minutes per theme for variety.\n\nMy manager appreciated me making it easy for them to take action—a simple go-ahead or \"zero in on this\" while getting alignment from all teams.\n\nThe best part was getting different employee groups to participate that truly reflected our \"Twilio Magic\" culture."
+        };
+
+        responses.workflow = {
+            kw: ['workflow', 'zapier', 'automation', 'slack', 'trigger', 'walk me through', 'building automations', 'build', 'automate'],
+            r: "When I initially launched an employee recognition platform using Airtable, it included an Airtable form (that fed the table) where you'd select from a dropdown the values an employee embodied, their name, and the kudos you wanted to give (write-in). While some people used the form, it seemed most people were still giving kudos in Slack. To me, it was obvious that having to do an extra step, (filling in the form) was still the barrier to giving meaningful kudos because it was faster to just do it in Slack.\n\nSo I decided to meet people where they are.\n\nI asked my boss, \"What if there was a way to automatically capture kudos by simply saying a magic word in Slack? That word being 'kudos.'\" He was interested, so I did a test run.\n\nI first defined the trigger and desired outcome:\n• Trigger: When someone mentions the word \"kudos\" in a specific Slack channel (New Mention)\n• Outcome: Send a copy of that kudos to Airtable (Create a New Record)\n\nThen I mapped the data flow:\nSlack message → Zapier catches it → Extracts key info (who, what, when) → Sends to Airtable\n\nThen I built and tested it:\n• Created a locked Slack channel\n• Tested with case-sensitive and case-insensitive mentions (Kudos, kudos)\n• Adjusted whether I wanted to pull out more or less information\n\nOnce my test proved successful, I moved toward documentation and enablement:\n• Drafted a simple guide for the team\n• Set up a feedback channel for improvements and iterations\n\nThe result was that twice as many people were giving kudos as before, and we now had a dedicated channel just for kudos (versus kudos getting lost in our primary announcements channel)."
+        };
+
+        responses.resources = {
+            kw: ['limited resources', 'budget', 'scrappy', 'recognition', 'kudos', 'zero cost'],
+            r: "A colleague and I pitched to Stanford's exec team that we should invest in an employee recognition tool. Leadership recommended starting with Google Forms as an MVP. I decided I could build something even better with zero additional dollars in Airtable.\n\nI wanted this to feel new and fresh. Since we were already paying for Airtable, I wanted to demonstrate how we could make the most of what we have with creativity.\n\nI designed a minimum lovable product: an Airtable form that fed into a base automatically. I added a dropdown of our company values employees had to select to give kudos more depth.\n\nI showcased how I'd elevated a static form with a searchable database. By tying kudos to a value in a dashboard, I gave leaders visibility into team contributions while giving employees a place to track accomplishments.\n\nLeadership actively encouraged people to use the new \"Kudos Board\" to celebrate achievements.\n\nTo me, limited resources mean \"being scrappy, not crappy\" to build something intuitive and delightful."
+        };
+
+        responses.proud = {
+            kw: ['proud', 'accomplishment', 'achievement', 'best work', 'most proud'],
+            r: "**Professionally:** Stanford's Employee Recognition platform. I'm a huge advocate for self-advocacy because that's something I had to teach myself growing up in a military-focused and Asian value-driven household. We often downplay our accomplishments, so being able to visibly see the impact that peers and managers recognize is something I hope people celebrate as they think about their growth.\n\n**Personally:** My travel blog, <a href='https://seekwanderful.com' target='_blank' style='color: #059669; text-decoration: underline;'>seekwanderful.com</a>. It's a testament to my commitment to personal excellence and a labor of love. Teaching myself WordPress, learning SEO, installing themes, setting up a domain and hosting, and writing all articles and editing all photos on my own—it's my art form and stories I'm excited to share. I've even landed on the first page of Google a few times, especially for my Taiwan guide!"
+        };
+
+        responses.leaving = {
+            kw: ['why leave', 'leaving stanford', 'new challenge', 'love through a prism', 'why move', 'why zapier', 'zapier'],
+            r: "I love my role at Stanford and how much I've built since being here. But I'm at a point where I'm ready for a new challenge rooted in AI innovation and enablement.\n\nI'm looking for a role where I can bring my strategic systems thinking and \"figure it out\" energy to a company that's pushing boundaries, and I see that at Zapier.\n\nAs an anime enjoyer, I recently completed Love Through A Prism, and one of the challenges the art professor gives his students has a theme of \"free\" with the task of exploring the concept of being \"free\" through art. Zapier's culture and approach to the future of work and automation align with my interpretation of the concept of free, which is having the freedom to be creative and different in the work that you do, to try and fail to become better, and to create meaningful, impactful, and delightful experiences while having fun doing so.\n\nFrom Zapier's first public all-hands, to the several learning sessions Zapier has held, to ping pong with Wade (yes, I was there at the event) to show how leaders are on the ground building with their employees, to Zapier driving 97% AI adoption, it's clear to me that Zapier embodies not just curiosity around how to make AI for everyone but is writing the playbook to help bring other companies and enthusiasts along on the journey, moving past curiosity to enthusiastic adoption for all.\n\nI've always loved blending art with technology, and I can't imagine a better place to contribute my enthusiasm and expertise while also growing in my own craft."
+        };
+
+        responses.strengths = {
+            kw: ['strength', 'good at', 'specialize', 'expertise', 'skills'],
+            r: "What sets me apart is my ability to \"zoom out\" and connect dots others miss.\n\n**Strategic Systems Thinking:** I design intuitive, people-first, scalable systems—Airtable knowledge hubs, Zapier workflows, AI agents that solve problems.\n\n**Executive Project Management:** I translate C-suite priorities into transformation. I accelerated Stanford Online's stalled transformation from 2+ years to 3 months with 100% executive alignment.\n\n**The \"Why the hell are we doing it this way?\" mindset:** I'm not satisfied until I've done my due diligence. I ask: Can we do this more easily? More creatively?\n\nI bring the unique combo of strategic vision AND tactical execution. I don't just advise—I build, design, and execute. 🚀"
+        };
+
+        responses.about = {
+            kw: ['about', 'who are you', 'background', 'introduce', 'yourself'],
+            r: "For years, I called myself \"the everything project manager\" because I didn't know how to articulate my strengths. With a squiggly work history spanning tech, education, and SaaS, I've been solving business problems for executive leaders.\n\nWith over a decade of experience, I'm a \"figure it out person.\" My work translates to: people operations solutions architect, business strategist, and chief of staff.\n\nMy strength is strategic systems thinking—\"zooming out\" to identify connections others overlook and creatively design people-first, sustainable solutions leveraging no-code, low-code, and AI tools.\n\nI embrace being someone who designs and executes as much as I advise and educate. I don't take myself too seriously, but I'm serious about operational excellence and delightful experiences. 🎯"
+        };
+
+        responses.hobbies = {
+            kw: ['fun', 'hobbies', 'outside work', 'travel', 'personal', 'funsies', 'do for fun'],
+            r: "I have quite a few hobbies, including traveling—17 countries and counting—that I'm chronicling on my travel blog, <a href='https://seekwanderful.com' target='_blank' style='color: #059669; text-decoration: underline;'>seekwanderful.com</a>. I'm also a big Asian pop culture fan. When I'm not reading fan fiction, I coordinate teams of volunteer voice actors to turn the best fan works into fully produced audiobooks."
+        };
+
+        responses.failure = {
+            kw: ['fail', 'mistake', 'went wrong', 'error', 'accessibility'],
+            r: "My manager wanted to drive Salesforce adoption. I discovered Supademo, an AI demo tool, to create an engaging \"mini course\" training.\n\nFor QA, I got feedback from a colleague who uses Salesforce and one who never had. The new user had visual impairment issues—ripples on buttons and pulsing pointers triggered their vertigo.\n\nThe fail? While the tool won for AI features, I was caught up in them and didn't consider accessibility beyond auditory processing. After their feedback, I removed all animations. That small change allowed them to review successfully and they applauded how easy I made the training.\n\nGreat reminder: create a checklist for considerations and consult specialists like instructional designers before getting started. Or, at minimum, a quick Google search."
+        };
+
+        responses.influence = {
+            kw: ['influence', 'no authority', 'buy-in', 'persuade', 'influencing without authority', 'without authority'],
+            r: "At Twilio, I redesigned our job description template to be more inclusive, but had zero authority over hiring managers who write descriptions exactly as they want.\n\nIn collaboration with legal, I held a virtual roadshow showcasing the \"before\" and \"after\" of the new template. I illustrated how it reduced compliance risks (legal spoke to this) and showed hiring managers how better templates would reduce back-and-forth with recruiters and prevent candidates from self-selecting out of key roles.\n\nBreaking down ownership, highlighting benefits, and leveraging legal as an advocate gave hiring managers a stronger sense of responsibility by speaking in a language they understood, driving successful adoption."
+        };
+
+        responses.priorities = {
+            kw: ['competing priorities', 'multiple stakeholders', 'juggling', 'workload', 'analysis paralysis', 'paralysis', 'manage competing'],
+            r: "I was a volunteer lead with a Twilio ERG and was asked if I could plan and lead a lunch-and-learn every month. I set up a repeatable process for outreach, Zoom setup, and survey administration.\n\nOutside of this volunteer position, I was facing a very busy recruiting season, so I asked the other chairs if we could popcorn who led and recruited speakers every month because of my personal workload and the needs of the business. I mentioned I could still manage the logistics and participant information, but if someone could carry out two specific tasks every month with the instructions I provided, it would help alleviate some of the workload and allow me to do my day-to-day more effectively.\n\nI built out a schedule that showed for the remainder of the year, each chair would only have to assist once every 2 months, alleviating the pressure that this would be an administrative burden, and making it feel more like a fun activity each person could own and put their own spin on if they desired."
+        };
+
+        responses.learning = {
+            kw: ['learn', 'quickly', 'new skill', 'salesforce', 'trailblazer'],
+            r: "For me, the best way to learn is to play.\n\nWhen appointed as my org's Salesforce Admin (sans certification), I knew I needed to help my team use it efficiently.\n\nSalesforce is robust. My approach: identify what we wanted to log, how the team had used it before, and start \"small.\"\n\nWith Trailblazer, I binged all modules on basics. Then I went into the demo environment to test creating accounts, opportunities, and prototyping flows. Once comfortable, I audited all custom objects to confirm what to keep based on our workflows.\n\nWhile not an expert, I learned enough to get our team excited by breaking it down into simple steps and expectations."
+        };
+
+        responses.inefficient = {
+            kw: ['inefficient', 'process', 'nobody cared', 'proof of concept', 'inbox'],
+            r: "I like leading with a proof of concept—it's easier for people to react to a solution than seek multiple opinions.\n\nBefore my team adopted Salesforce, we'd reply to a shared inbox confirming who'd follow up with inbound leads. Leads got buried and missed, causing team leads to clutter the inbox with questions.\n\nI built a zero-cost CRM in Airtable with automation. If an email hit our inbox, Airtable would extrapolate details and populate a table. A separate automation emailed the team if a lead wasn't contacted in 24 hours.\n\nThis created a searchable CRM where colleagues could assign themselves and see who required action. It significantly reduced lost leads and eliminated inbox replies.\n\nBy showing a preview and how we reduced two steps to one, others got curious, leading to more Airtable adoption and reduced email fatigue.\n\nWhen people realize how simple a new process can be, they're less skeptical."
+        };
+
+        responses.knowledge = {
+            kw: ['knowledge', 'repository', 'knowledge management', 'documentation', 'taxonomy', 'systems thinking', 'design'],
+            r: "I've designed several knowledge repositories in Airtable. The tech is the easy part. The challenge is: 1) Understanding how your org thinks, and 2) How you want people to navigate information.\n\nFor Stanford Online's Knowledge Center:\n\n1. Understand the pain:\n• What info are people searching for repeatedly?\n• Where do knowledge gaps cause friction?\n\n2. Design the taxonomy:\n• \"Keep it simple, stupid\"—use language the team knows, focus on core themes without overwhelming\n\n3. Build governance from day one:\n• Who owns updates? What's the review cadence?\n• How do we sunset outdated info?\n• Automate data integrity (dropdowns vs write-ins, identify duplications)\n\n4. Make it intuitive:\n• Different interfaces for different user types\n• Easy-to-read guides and visual hierarchy\n\nI created a robust, searchable knowledge base. Omni, Airtable's native AI, also helped employees find information even faster."
+        };
+
+        responses.communication = {
+            kw: ['stakeholder', 'communication', 'how do you communicate', 'keeping people informed', 'updates', 'communication style'],
+            r: "I always value over-communication in different mediums to catch people where they are. And with most places in a hybrid work environment, communication across different mediums is a must.\n\nFor the business transformation project I led for Stanford, I leveraged this framework:\n\nBefore the project:\n• Stakeholder mapping: Who needs to know the what, where, and why, and to what extent (for my sponsor, executive, leader, and project team)\n• Mode of communication: Ensuring meeting recaps are emailed, confirmations in Slack saying to check email, and using Looms in place of a meeting or embedded in emails for a TLDR\n\nDuring the project:\n• Meeting agendas: Providing a brief overview of what's expected (working session, brainstorm), attendee roles, and if any prework is involved\n• Status updates: Using a consistent format in my messaging (progress, visibility only, next steps, pivots) so people can scan quickly\n• Transparency on risks: I flag potential problems early\n• Visibility tools: Dashboards in Airtable, Asana, or Google Docs so stakeholders can self-serve\n\nShowcasing the project org-wide:\n• Explaining the logic: Broke down our assumptions, approach, findings, and recommendations (both free and paid, short-term versus long-term wins)\n\nAfter the project:\n• Providing periodic updates on the status of each build that went into production to keep the org abreast of the actual progress being made\n\nCheck out the \"Leading Stanford Online's Business Transformation Strategy\" project in my portfolio for more details."
+        };
+
+        function addMessage(content, isBot = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isBot ? 'bot' : 'user'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            if (isBot) {
+                const avatar = document.createElement('img');
+                avatar.src = 'https://dn721802.ca.archive.org/0/items/headshot-kh/Headshot_KH.JPG';
+                avatar.alt = 'Katrina';
+                avatar.className = 'bot-avatar';
+                contentDiv.appendChild(avatar);
+            }
+            
+            contentDiv.innerHTML += content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            messageDiv.appendChild(contentDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesDiv = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typing';
+            typingDiv.innerHTML = `<div class="message-content typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+            messagesDiv.appendChild(typingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingDiv = document.getElementById('typing');
+            if (typingDiv) typingDiv.remove();
+        }
+
+        function getBotResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            
+            // Check "why zapier" specifically
+            if (lowerMessage.includes('why zapier') || 
+                lowerMessage.includes('why are you interested in zapier') || 
+                lowerMessage.includes('leaving stanford') || 
+                lowerMessage.includes('why leave')) {
+                return responses.leaving.r;
+            }
+            
+            // Check communication style specifically
+            if (lowerMessage.includes('communication style') || 
+                lowerMessage.includes('stakeholder communication') ||
+                lowerMessage.includes('process for stakeholder') ||
+                lowerMessage.includes('explain your process')) {
+                return responses.communication.r;
+            }
+            
+            // Check workflow/automation context
+            const hasWorkflowContext = lowerMessage.includes('workflow') || 
+                                      lowerMessage.includes('automation') || 
+                                      lowerMessage.includes('walk me through');
+            const hasZapier = lowerMessage.includes('zapier');
+            
+            if (hasWorkflowContext && hasZapier) {
+                return responses.workflow.r;
+            }
+            
+            // Check failure keywords
+            for (let i = 0; i < responses.failure.kw.length; i++) {
+                if (lowerMessage.includes(responses.failure.kw[i])) {
+                    return responses.failure.r;
+                }
+            }
+            
+            // Check other responses
+            for (const key in responses) {
+                if (key === 'failure' || key === 'leaving' || key === 'workflow' || key === 'communication') {
+                    continue;
+                }
+                const data = responses[key];
+                for (let i = 0; i < data.kw.length; i++) {
+                    if (lowerMessage.includes(data.kw[i])) {
+                        return data.r;
+                    }
+                }
+            }
+            
+            return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            addMessage(message, false);
+            input.value = '';
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = getBotResponse(message);
+                addMessage(response, true);
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function sendQuickReply(message) {
+            addMessage(message, false);
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = getBotResponse(message);
+                addMessage(response, true);
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>
